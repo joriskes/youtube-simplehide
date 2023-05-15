@@ -1,0 +1,9 @@
+.youtube-simplehide-button {
+    background: red;
+    width: 24px;
+    height: 24px;
+    bottom: 0px;
+    right: 8px;
+    position: absolute;
+    padding: 4px;
+}

@@ -1,0 +1,26 @@
+{
+	"manifest_version": 3,
+	"name": "Youtube simple hide",
+	"description": "Adds a simple hide button in the button overlays in your YouTube subscription feed",
+	"version": "0.1",
+	"icons": {
+		"128": "128.png"
+	},
+	"homepage_url": "https://github.com/joriskes/youtube-simplehide",
+	"content_scripts": [
+		{
+			"js": [
+				"./scripts/content.js"
+			],
+			"css" : [
+				"./styles/simplehide.css"
+			],
+			"matches": [
+				"https://youtube.com/feed/subscriptions*",
+				"https://*.youtube.com/feed/subscriptions*"
+			],
+			"run_at": "document_start"
+		}
+	]
+
+}
