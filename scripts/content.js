@@ -1,4 +1,4 @@
-let awaitingHide = false;
+let awaitingHide = null;
 let youtubeHideButton = null;
 
 const injectHideButton = (node) => {
@@ -14,14 +14,20 @@ const injectHideButton = (node) => {
     e.stopImmediatePropagation();
     e.stopPropagation();
 
+    // Find hamburger menu button
     const trigger = node.querySelector('.dropdown-trigger #button');
     if(trigger) {
+      // Click it
       trigger.click();
       if(youtubeHideButton === null) {
-        awaitingHide = true;
+        // First load the menu must be added to the DOM, start the wait
+        awaitingHide = hideButton;
       } else {
-        youtubeHideButton.click();
-        youtubeHideButton.parentNode.style.display = 'none';
+        // We need a short timeout to allow for the menu to be built after clicking on the hamburger button
+        setTimeout(function() {
+          youtubeHideButton.click();
+          youtubeHideButton.parentNode.style.display = 'none';
+        }, 100);
       }
     }
 
@@ -55,15 +61,19 @@ const observer = new MutationObserver(function (mutations) {
 
 
         // Check for menu items being added
-        if(node.classList.contains("ytd-menu-popup-renderer") && node.tagName === "YTD-MENU-SERVICE-ITEM-RENDERER" && awaitingHide) {
+        if(node.classList.contains("ytd-menu-popup-renderer") && node.tagName === "YTD-MENU-SERVICE-ITEM-RENDERER") {
           if(node.parentNode.childNodes.length > 2) {
-            // last child node is some footer thing, second to last is the hide button
+            // Find out if the button in question is the second to last element in the menu list
+            // (Last child node is some footer thing)
             const buttonToFind = node.parentNode.childNodes.item(node.parentNode.childNodes.length-2)
             if(buttonToFind === node) {
+              // We've found the hide button, store for later use
               youtubeHideButton = node;
-              youtubeHideButton.click();
-              youtubeHideButton.parentNode.style.display = 'none';
-              awaitingHide = false;
+              // If we were waiting for it rerun the click event on the original node
+              if(awaitingHide !== null) {
+                awaitingHide.click();
+                awaitingHide = null;
+              }
             }
           }
         }
