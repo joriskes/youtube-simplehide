@@ -1,3 +1,6 @@
+let awaitingHide = false;
+let youtubeHideButton = null;
+
 const observer = new MutationObserver(function (mutations) {
   mutations.forEach(function (mutation) {
     if (!mutation.addedNodes) {
@@ -5,9 +8,10 @@ const observer = new MutationObserver(function (mutations) {
     }
     for (let i = 0; i < mutation.addedNodes.length; i++) {
       const node = mutation.addedNodes[i];
+      // Check for video thumbnails
       if(node.classList) {
         if (node.classList.contains("ytd-grid-video-renderer") && node.tagName === 'YTD-MENU-RENDERER') {
-          console.log('joris'+i,node);
+          // console.log('joris'+i,node);
           let hideButton = document.createElement('div');
           hideButton.classList.add('youtube-simplehide-button')
 
@@ -15,14 +19,41 @@ const observer = new MutationObserver(function (mutations) {
           let svg = new DOMParser().parseFromString(xmlString, "text/xml");
 
           hideButton.appendChild(svg.documentElement)
-          node.appendChild(hideButton);
 
+          hideButton.onclick = (e) => {
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+
+            const trigger = node.querySelector('.dropdown-trigger #button');
+            if(trigger) {
+              trigger.click();
+              if(youtubeHideButton === null) {
+                awaitingHide = true;
+              } else {
+                youtubeHideButton.click();
+                youtubeHideButton.parentNode.style.display = 'none';
+              }
+            }
+
+            return false;
+          }
+          node.appendChild(hideButton);
           node.style['height'] = '100%';
         }
-        // if (mutation.addedNodes[i].classList.contains("ytd-video-renderer")) {
-        //   // Your logic here
-        //   console.log('joris hoi shelf '+i,mutation.addedNodes[i])
-        // }
+
+        // Check for menu items being added
+        if(node.classList.contains("ytd-menu-popup-renderer") && node.tagName === "YTD-MENU-SERVICE-ITEM-RENDERER" && awaitingHide) {
+          if(node.parentNode.childNodes.length > 2) {
+            // last child node is some footer thing, second to last is the hide button
+            const buttonToFind = node.parentNode.childNodes.item(node.parentNode.childNodes.length-2)
+            if(buttonToFind === node) {
+              youtubeHideButton = node;
+              youtubeHideButton.click();
+              youtubeHideButton.parentNode.style.display = 'none';
+              awaitingHide = false;
+            }
+          }
+        }
       }
     }
   });
